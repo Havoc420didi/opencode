@@ -16,9 +16,30 @@ export namespace Log {
     ERROR: 3,
   }
 
-  let level: Level = "INFO"
+  const levelColors: Record<Level, string> = {
+    DEBUG: "\x1b[90m",   // gray
+    INFO: "\x1b[36m",    // cyan
+    WARN: "\x1b[33m",    // yellow
+    ERROR: "\x1b[31m",   // red
+  }
 
-  function shouldLog(input: Level): boolean {
+  const serviceColors: Record<string, string> = {
+    ask: "\x1b[35m",     // magenta
+    server: "\x1b[32m",  // green
+    session: "\x1b[34m", // blue
+    bus: "\x1b[90m",     // gray
+  }
+
+  const reset = "\x1b[0m"
+  let level: Level = "INFO"
+  let excludedServices = new Set<string>()
+
+  export function excludeServices(services: string[]) {
+    excludedServices = new Set(services)
+  }
+
+  function shouldLog(input: Level, service?: string): boolean {
+    if (service && excludedServices.has(service)) return false
     return levelPriority[input] >= levelPriority[level]
   }
 
@@ -126,25 +147,32 @@ export namespace Log {
       last = next.getTime()
       return [next.toISOString().split(".")[0], "+" + diff + "ms", prefix, message].filter(Boolean).join(" ") + "\n"
     }
+
+    const serviceColor = service && typeof service === "string" ? (serviceColors[service] ?? "") : ""
+
     const result: Logger = {
       debug(message?: any, extra?: Record<string, any>) {
-        if (shouldLog("DEBUG")) {
-          write("DEBUG " + build(message, extra))
+        if (shouldLog("DEBUG", service)) {
+          const color = levelColors.DEBUG
+          write(`${color}DEBUG${reset} ${serviceColor}${build(message, extra)}${reset}`)
         }
       },
       info(message?: any, extra?: Record<string, any>) {
-        if (shouldLog("INFO")) {
-          write("INFO  " + build(message, extra))
+        if (shouldLog("INFO", service)) {
+          const color = levelColors.INFO
+          write(`${color}INFO${reset} ${serviceColor}${build(message, extra)}${reset}`)
         }
       },
       error(message?: any, extra?: Record<string, any>) {
-        if (shouldLog("ERROR")) {
-          write("ERROR " + build(message, extra))
+        if (shouldLog("ERROR", service)) {
+          const color = levelColors.ERROR
+          write(`${color}ERROR${reset} ${serviceColor}${build(message, extra)}${reset}`)
         }
       },
       warn(message?: any, extra?: Record<string, any>) {
-        if (shouldLog("WARN")) {
-          write("WARN  " + build(message, extra))
+        if (shouldLog("WARN", service)) {
+          const color = levelColors.WARN
+          write(`${color}WARN${reset} ${serviceColor}${build(message, extra)}${reset}`)
         }
       },
       tag(key: string, value: string) {

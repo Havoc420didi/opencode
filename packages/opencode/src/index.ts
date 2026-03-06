@@ -69,8 +69,9 @@ let cli = yargs(hideBin(process.argv))
     choices: ["DEBUG", "INFO", "WARN", "ERROR"],
   })
   .middleware(async (opts) => {
+    const isServe = process.argv.slice(2).includes("serve")
     await Log.init({
-      print: process.argv.includes("--print-logs"),
+      print: isServe || process.argv.includes("--print-logs"),
       dev: Installation.isLocal(),
       level: (() => {
         if (opts.logLevel) return opts.logLevel as Log.Level
@@ -78,6 +79,7 @@ let cli = yargs(hideBin(process.argv))
         return "INFO"
       })(),
     })
+    Log.excludeServices(["bus"])  // INFO 屏蔽 bus 日志
 
     process.env.AGENT = "1"
     process.env.OPENCODE = "1"
