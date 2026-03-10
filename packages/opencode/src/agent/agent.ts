@@ -141,9 +141,12 @@ export namespace Agent {
             websearch: "allow",
             codesearch: "allow",
             read: "allow",
+            edit: "allow",
             external_directory: {
               "*": "ask",
               ...Object.fromEntries(whitelistedDirs.map((dir) => [dir, "allow"])),
+              // TAG # wxapp-analyze
+              [path.join("/Users/havocrao/Documents/Projects/wx/wxapp-analyse/data/opencode-analysis-report", "*")]: "allow",
             },
           }),
           user,
