@@ -53,6 +53,7 @@ export namespace SessionProcessor {
             if (requestDelay > 0) {
               await new Promise((resolve) => setTimeout(resolve, requestDelay))
             }
+            log.info("🤖 LLM_CALL", { attempt })
             let currentText: MessageV2.TextPart | undefined
             let reasoningMap: Record<string, MessageV2.ReasoningPart> = {}
             const stream = await LLM.stream(streamInput)
