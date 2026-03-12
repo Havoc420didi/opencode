@@ -1,6 +1,7 @@
 import { Bus } from "@/bus"
 import { BusEvent } from "@/bus/bus-event"
 import { Config } from "@/config/config"
+import { Flag } from "@/flag/flag"
 import { Identifier } from "@/id/id"
 import { Instance } from "@/project/instance"
 import { Database, eq } from "@/storage/db"
@@ -141,6 +142,11 @@ export namespace PermissionNext {
         if (rule.action === "deny")
           throw new DeniedError(ruleset.filter((r) => Wildcard.match(request.permission, r.permission)))
         if (rule.action === "ask") {
+          // Auto-approve in HTTP/non-interactive mode if flag is set
+          if (Flag.OPENCODE_AUTO_APPROVE_PERMISSIONS) {
+            log.info("auto-approved", { permission: request.permission, pattern })
+            continue
+          }
           const id = input.id ?? Identifier.ascending("permission")
           return new Promise<void>((resolve, reject) => {
             const info: Request = {
