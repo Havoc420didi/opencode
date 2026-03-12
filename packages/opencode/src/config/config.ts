@@ -1166,6 +1166,12 @@ export namespace Config {
             .positive()
             .optional()
             .describe("Timeout in milliseconds for model context protocol (MCP) requests"),
+          request_delay: z
+            .number()
+            .int()
+            .min(0)
+            .optional()
+            .describe("Delay in milliseconds between LLM API requests (default: 0)"),
         })
         .optional(),
     })
