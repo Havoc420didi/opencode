@@ -1,140 +1,295 @@
-<p align="center">
-  <a href="https://opencode.ai">
-    <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo">
-    </picture>
-  </a>
-</p>
-<p align="center">The open source AI coding agent.</p>
-<p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/anomalyco/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/opencode/publish.yml?style=flat-square&branch=dev" /></a>
-</p>
+# OpenCode 基本使用文档
 
-<p align="center">
-  <a href="README.md">English</a> |
-  <a href="README.zh.md">简体中文</a> |
-  <a href="README.zht.md">繁體中文</a> |
-  <a href="README.ko.md">한국어</a> |
-  <a href="README.de.md">Deutsch</a> |
-  <a href="README.es.md">Español</a> |
-  <a href="README.fr.md">Français</a> |
-  <a href="README.it.md">Italiano</a> |
-  <a href="README.da.md">Dansk</a> |
-  <a href="README.ja.md">日本語</a> |
-  <a href="README.pl.md">Polski</a> |
-  <a href="README.ru.md">Русский</a> |
-  <a href="README.bs.md">Bosanski</a> |
-  <a href="README.ar.md">العربية</a> |
-  <a href="README.no.md">Norsk</a> |
-  <a href="README.br.md">Português (Brasil)</a> |
-  <a href="README.th.md">ไทย</a> |
-  <a href="README.tr.md">Türkçe</a> |
-  <a href="README.uk.md">Українська</a> |
-  <a href="README.bn.md">বাংলা</a> |
-  <a href="README.gr.md">Ελληνικά</a>
-</p>
+## 目录
 
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+- [环境配置](#环境配置)
+- [快速开始](#快速开始)
+- [基本使用](#基本使用)
+- [高级配置](#高级配置)
+- [常见问题](#常见问题)
 
 ---
 
-### Installation
+## 环境配置
+
+### 系统要求
+
+- **Node.js**: >= 18.x
+- **Bun**: >= 1.3.10（必需）
+- **操作系统**: macOS / Linux / Windows
+
+### 安装 Bun
+
+如果尚未安装 Bun，请先安装：
 
 ```bash
-# YOLO
-curl -fsSL https://opencode.ai/install | bash
+# macOS/Linux
+curl -fsSL https://bun.sh/install | bash
 
-# Package managers
-npm i -g opencode-ai@latest        # or bun/pnpm/yarn
-scoop install opencode             # Windows
-choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS and Linux (recommended, always up to date)
-brew install opencode              # macOS and Linux (official brew formula, updated less)
-sudo pacman -S opencode            # Arch Linux (Stable)
-paru -S opencode-bin               # Arch Linux (Latest from AUR)
-mise use -g opencode               # Any OS
-nix run nixpkgs#opencode           # or github:anomalyco/opencode for latest dev branch
+# 或使用 npm
+npm install -g bun
+
+# Windows
+powershell -c "irm bun.sh/install.ps1 | iex"
+```
+
+### 克隆项目
+
+```bash
+# 克隆仓库
+git clone git@git.woa.com:g_WXG_OB_MP_D2/opencode-wxapp-analyzer.git
+cd opencode-wxapp-analyzer
+```
+
+### 安装依赖
+
+```bash
+# 安装所有依赖
+bun install
 ```
 
 > [!TIP]
-> Remove versions older than 0.1.x before installing.
-
-### Desktop App (BETA)
-
-OpenCode is also available as a desktop application. Download directly from the [releases page](https://github.com/anomalyco/opencode/releases) or [opencode.ai/download](https://opencode.ai/download).
-
-| Platform              | Download                              |
-| --------------------- | ------------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-darwin-aarch64.dmg` |
-| macOS (Intel)         | `opencode-desktop-darwin-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe`    |
-| Linux                 | `.deb`, `.rpm`, or AppImage           |
-
-```bash
-# macOS (Homebrew)
-brew install --cask opencode-desktop
-# Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
-```
-
-#### Installation Directory
-
-The install script respects the following priority order for the installation path:
-
-1. `$OPENCODE_INSTALL_DIR` - Custom installation directory
-2. `$XDG_BIN_DIR` - XDG Base Directory Specification compliant path
-3. `$HOME/bin` - Standard user binary directory (if it exists or can be created)
-4. `$HOME/.opencode/bin` - Default fallback
-
-```bash
-# Examples
-OPENCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://opencode.ai/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
-```
-
-### Agents
-
-OpenCode includes two built-in agents you can switch between with the `Tab` key.
-
-- **build** - Default, full-access agent for development work
-- **plan** - Read-only agent for analysis and code exploration
-  - Denies file edits by default
-  - Asks permission before running bash commands
-  - Ideal for exploring unfamiliar codebases or planning changes
-
-Also included is a **general** subagent for complex searches and multistep tasks.
-This is used internally and can be invoked using `@general` in messages.
-
-Learn more about [agents](https://opencode.ai/docs/agents).
-
-### Documentation
-
-For more info on how to configure OpenCode, [**head over to our docs**](https://opencode.ai/docs).
-
-### Contributing
-
-If you're interested in contributing to OpenCode, please read our [contributing docs](./CONTRIBUTING.md) before submitting a pull request.
-
-### Building on OpenCode
-
-If you are working on a project that's related to OpenCode and is using "opencode" as part of its name, for example "opencode-dashboard" or "opencode-mobile", please add a note to your README to clarify that it is not built by the OpenCode team and is not affiliated with us in any way.
-
-### FAQ
-
-#### How is this different from Claude Code?
-
-It's very similar to Claude Code in terms of capability. Here are the key differences:
-
-- 100% open source
-- Not coupled to any provider. Although we recommend the models we provide through [OpenCode Zen](https://opencode.ai/zen), OpenCode can be used with Claude, OpenAI, Google, or even local models. As models evolve, the gaps between them will close and pricing will drop, so being provider-agnostic is important.
-- Out-of-the-box LSP support
-- A focus on TUI. OpenCode is built by neovim users and the creators of [terminal.shop](https://terminal.shop); we are going to push the limits of what's possible in the terminal.
-- A client/server architecture. This, for example, can allow OpenCode to run on your computer while you drive it remotely from a mobile app, meaning that the TUI frontend is just one of the possible clients.
+> 首次安装可能需要几分钟，请耐心等待
 
 ---
 
-**Join our community** [Discord](https://discord.gg/opencode) | [X.com](https://x.com/opencode)
+### 配置司内模型
+
+OpenCode 支持配置企业内部或自定义 AI 模型。以下是配置微信内部模型的示例：
+
+#### 快速配置
+
+```bash
+# 创建配置目录
+mkdir -p ~/.config/opencode
+
+# 写入配置文件
+cat > ~/.config/opencode/opencode.json << 'EOF'
+{
+  "model": "wxa/your-model-name",
+  "provider": {
+    "wxa": {
+      "name": "WeChat AI",
+      "api": "https://your-api-endpoint.com/v1", // INFO 注意 opencode 会自动补充 `/chat/completions` 的后缀
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "apiKey": "your-api-key"
+      },
+      "models": {
+        "your-model-name": {
+          "name": "your-model-name"
+        }
+      }
+    }
+  }
+}
+EOF
+```
+
+#### 配置说明
+
+| 字段 | 说明 |
+|------|------|
+| `model` | 默认使用的模型，格式为 `provider/model-name` |
+| `provider` | 自定义提供商配置 |
+| `api` | API 端点地址 |
+| `npm` | 使用的 AI SDK 包（通常为 `@ai-sdk/openai-compatible`） |
+| `options.apiKey` | API 密钥 |
+
+> [!NOTE]
+> - 配置完成后需重启 OpenCode 服务才能生效
+> - API 密钥建议使用环境变量存储：`"apiKey": "$MY_API_KEY"`
+> - 支持 OpenAI API 兼容的模型（如 DeepSeek、Moonshot 等）
+
+---
+
+## 基本使用
+
+### 启动服务器模式
+
+OpenCode 支持服务器模式，可以作为一个后台服务运行，提供 API 接口供其他客户端调用。
+
+#### 启动服务器
+
+```bash
+npm run serve
+```
+
+#### 命令输出说明
+
+```bash
+$ bun run --conditions=browser ./src/index.ts serve
+INFO 2026-03-16T03:50:50 +108ms service=default version=local args=["serve"] opencode
+Warning: OPENCODE_SERVER_PASSWORD is not set; server is unsecured.
+INFO 2026-03-16T03:50:50 +1ms service=config path=/Users/havocrao/.config/opencode/config.json loading
+INFO 2026-03-16T03:50:50 +1ms service=config path=/Users/havocrao/.config/opencode/opencode.json loading
+INFO 2026-03-16T03:50:50 +3ms service=config path=/Users/havocrao/.config/opencode/opencode.jsonc loading
+opencode server listening on http://127.0.0.1:4096
+```
+
+**关键信息解读：**
+
+1. **服务启动**: 服务器监听在 `http://127.0.0.1:4096`
+2. **配置文件加载**: 自动加载以下配置文件（按顺序）：
+   - `~/.config/opencode/config.json`
+   - `~/.config/opencode/opencode.json`
+   - `~/.config/opencode/opencode.jsonc`（支持注释的 JSON）
+3. **安全警告**: 如果未设置 `OPENCODE_SERVER_PASSWORD` 环境变量，服务器将以无认证模式运行
+
+#### 服务器端口配置
+
+默认端口为 `4096`，可以通过环境变量修改：
+
+```bash
+# 使用自定义端口
+export OPENCODE_SERVER_PORT=8080
+bun run serve
+```
+
+或者：
+
+```bash
+OPENCODE_SERVER_PORT=8080 bun run serve
+```
+
+#### 访问服务器
+
+服务器启动后，可以通过 HTTP 请求访问：
+
+```bash
+# 健康检查
+curl http://127.0.0.1:4096/health
+
+# API 调用示例（需要认证时）
+curl -H "Authorization: Bearer your-token" http://127.0.0.1:4096/api/endpoint
+```
+
+## 高级配置
+
+### 配置文件位置
+
+OpenCode 配置文件位于：
+
+```
+~/.config/opencode/
+├── config.json        # 主配置文件
+├── opencode.json      # OpenCode 配置
+└── opencode.jsonc     # OpenCode 配置（支持注释）
+```
+
+### 基础配置示例
+
+```json
+{
+  "model": "claude-3.5-sonnet",
+  "provider": "anthropic",
+  "temperature": 0.7,
+  "maxTokens": 4096
+}
+```
+
+### 外部目录访问权限配置
+
+OpenCode 默认情况下访问外部目录会询问用户确认（`"ask"`）。你可以通过配置文件预先授权特定目录的访问权限。
+
+#### 配置方法
+
+在 `~/.config/opencode/opencode.json` 或 `opencode.jsonc` 中添加 `permission.external_directory` 配置：
+
+```jsonc
+{
+  "permission": {
+    "external_directory": {
+      // 默认行为：询问用户（可选，默认值）
+      "*": "ask",
+      
+      // 允许访问特定目录（使用通配符 * 表示目录下所有文件）
+      "/Users/yourname/projects/myapp/data/*": "allow",
+      "/Users/yourname/projects/myapp/skills/*": "allow",
+      
+      // 也支持相对路径（相对于工作目录）
+      "../shared-libs/*": "allow",
+      
+      // 拒绝访问敏感目录
+      "/etc/*": "deny",
+      "~/.ssh/*": "deny"
+    }
+  }
+}
+```
+
+#### 权限级别说明
+
+| 权限值 | 说明 |
+|--------|------|
+| `"allow"` | 允许访问，不再询问 |
+| `"ask"` | 访问前询问用户（默认） |
+| `"deny"` | 拒绝访问 |
+
+#### 实际示例
+
+假设你的项目结构如下，需要让 OpenCode 访问外部数据目录和技能目录：
+
+```
+/Users/yourname/
+├── projects/
+│   └── myapp/           # 当前工作目录
+│       ├── src/
+│       └── package.json
+├── data/                # 外部数据目录
+│   └── reports/
+└── skills/              # 外部技能目录
+    └── custom/
+```
+
+配置文件示例：
+
+```jsonc
+{
+  // ~/.config/opencode/opencode.jsonc
+  
+  "model": "claude-3.5-sonnet",
+  "provider": "anthropic",
+  
+  "permission": {
+    "external_directory": {
+      // 允许访问数据目录
+      "/Users/yourname/data/*": "allow",
+      
+      // 允许访问技能目录
+      "/Users/yourname/skills/*": "allow",
+      
+      // 其他所有外部目录仍需询问
+      "*": "ask"
+    }
+  }
+}
+```
+
+> [!NOTE]
+> - 路径支持使用 `*` 通配符，表示匹配目录下的所有文件和子目录
+> - 配置更改后需要重启 OpenCode 服务才能生效
+> - 建议仅授权可信目录，避免授权敏感路径（如系统目录、密钥文件等）
+
+### 环境变量
+
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `OPENCODE_SERVER_PASSWORD` | 服务器认证密码 | 无（无认证） |
+| `OPENCODE_SERVER_PORT` | 服务器端口 | `4096` |
+| `OPENCODE_CONFIG_DIR` | 配置文件目录 | `~/.config/opencode` |
+| `OPENCODE_DATA_DIR` | 数据存储目录 | `~/.opencode` |
+
+---
+
+
+## 更多资源
+
+- 📖 [完整文档](https://opencode.ai/docs)
+- 📄 [官方 README](./README.ori.md)
+- 🤝 [贡献指南](./CONTRIBUTING.md)
+- 💬 [Discord 社区](https://discord.gg/opencode)
+- 🐦 [Twitter/X](https://x.com/opencode)
+- 🌐 [官方网站](https://opencode.ai)
+
+---

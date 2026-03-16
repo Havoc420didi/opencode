@@ -147,8 +147,7 @@ export namespace Agent {
               "*": "ask",
               ...Object.fromEntries(whitelistedDirs.map((dir) => [dir, "allow"])),
               // TAG # wxapp-analyze // BUG 但是好像还得去 ~/.config/opencode 下的配置文件中调整？
-              [path.join("/Users/havocrao/Documents/Projects/wx/wxapp-analyse/data", "*")]: "allow",
-              [path.join("/Users/havocrao/Documents/Projects/wx/wxapp-analyse/core/agents/skills", "*")]: "allow",
+              // [path.join("your-wxapp-dir", "*")]: "allow",
             },
           }),
           user,
