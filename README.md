@@ -159,10 +159,123 @@ OPENCODE_SERVER_PORT=8080 bun run serve
 ```bash
 # 健康检查
 curl http://127.0.0.1:4096/health
-
-# API 调用示例（需要认证时）
-curl -H "Authorization: Bearer your-token" http://127.0.0.1:4096/api/endpoint
 ```
+
+### API 端点
+
+#### POST /ask - 发送问题
+
+向 OpenCode 发送自然语言问题，AI 会在指定的工作目录中执行搜索、分析和代码操作。
+
+**指定工作目录的三种方式：**
+
+```bash
+# 方式一：URL Query 参数（推荐）
+curl -X POST "http://localhost:4096/ask?directory=/path/to/project" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "你的问题"}'
+
+# 方式二：HTTP Header
+curl -X POST http://localhost:4096/ask \
+  -H "Content-Type: application/json" \
+  -H "x-opencode-directory: /path/to/project" \
+  -d '{"query": "你的问题"}'
+
+# 方式三：默认使用启动服务器时的 cwd
+# 如果不指定 directory，会使用服务器启动时的工作目录
+curl -X POST http://localhost:4096/ask \
+  -H "Content-Type: application/json" \
+  -d '{"query": "你的问题"}'
+```
+
+**请求参数：**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `query` | string | ✅ | 自然语言问题或任务描述 |
+| `agent` | string | ❌ | 使用的 agent（默认 `explore`） |
+
+**响应格式：**
+
+```json
+{
+  "result": "AI 的分析结果...",
+  "sessionID": "ses_xxx"
+}
+```
+
+#### POST /ask/:sessionID/follow-up - 追问
+
+在之前的会话基础上继续提问，保持上下文。
+
+```bash
+curl -X POST "http://localhost:4096/ask/ses_xxx/follow-up?directory=/path/to/project" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "追问内容"}'
+```
+
+### 使用示例
+
+#### 示例 1：简单问候
+
+```bash
+curl -X POST "http://localhost:4096/ask?directory=/path/to/project" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "你好"}'
+```
+
+**响应：**
+
+```json
+{
+  "result": "你好！👋 我是文件搜索助手，可以帮助你在这个代码库中查找文件、搜索代码内容、阅读和分析文件。",
+  "sessionID": "ses_33d8e85d8ffehPr6iW7LfZ2aEs"
+}
+```
+
+#### 示例 2：分析项目结构
+
+```bash
+curl -X POST "http://localhost:4096/ask?directory=/path/to/project" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "分析这个小程序的项目结构"}'
+```
+
+**响应：** 返回详细的项目结构分析报告，包括目录结构、核心文件、页面架构、组件、业务逻辑层等信息。
+
+#### 示例 3：附带文件引用
+
+使用 `@` 符号引用外部文件，AI 会读取并分析该文件内容。
+
+```bash
+curl -X POST "http://localhost:4096/ask?directory=/path/to/project" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "梗概此文档任务 @/path/to/skill-doc.md"}'
+```
+
+**响应：** 返回文档的核心要点梗概。
+
+#### 示例 4：复杂任务 + 写文件
+
+让 AI 执行复杂任务并将结果写入文件。这种方式通过 Agent 的 Tool 执行，输出的信息更加规整和完整。
+
+```bash
+curl -X POST "http://localhost:4096/ask?directory=/path/to/project" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "参考此任务文档 @/path/to/skill-doc.md, 最后把分析报告写到 `/path/to/output` 下新建一个md文档，以时间戳为文件名，最终只把文件完整路径返回。你的任务是分析: <组件HTML>..."}'
+```
+
+**关键要点：**
+- 明确指定输出目录的完整路径
+- 指定文件命名规则（如时间戳）
+- 明确返回格式要求（如"只返回文件路径"）
+
+> [!NOTE]
+> - 外部目录访问需要在 `~/.config/opencode/opencode.json` 中配置权限（参见[外部目录访问权限配置](#外部目录访问权限配置)）
+> - 路径支持绝对路径和相对路径
+> - 如果遇到权限问题，检查 `permission.external_directory` 配置
+
+---
 
 ## 高级配置
 
@@ -282,6 +395,78 @@ OpenCode 默认情况下访问外部目录会询问用户确认（`"ask"`）。�
 
 ---
 
+## 常见问题
+
+### Q1: bun install 失败？
+
+**A:** 尝试以下解决方案：
+
+```bash
+# 清除缓存
+bun pm cache rm
+
+# 删除 node_modules 重新安装
+rm -rf node_modules bun.lock
+bun install
+```
+
+### Q2: 服务器启动后无法访问？
+
+**A:** 检查以下项目：
+1. 确认服务器已成功启动并显示监听地址
+2. 检查防火墙设置，确保端口未被阻止
+3. 如果使用自定义端口，确认端口未被占用
+
+```bash
+# 检查端口是否被占用
+lsof -i :4096
+
+# 或使用 netstat
+netstat -an | grep 4096
+```
+
+### Q3: 如何更新项目？
+
+**A:**
+
+```bash
+# 拉取最新代码
+git pull
+
+# 更新依赖
+bun install
+```
+
+### Q4: 配置文件格式错误怎么办？
+
+**A:** OpenCode 支持 `.jsonc` 格式（带注释的 JSON），如果配置文件格式错误，可以：
+1. 检查 JSON 语法是否正确
+2. 使用 JSON 验证工具验证配置文件
+3. 删除配置文件，让 OpenCode 重新生成默认配置
+
+### Q5: 如何运行测试？
+
+**A:** 测试不能从项目根目录运行，需要进入具体的 package 目录：
+
+```bash
+# 进入 opencode package
+cd packages/opencode
+
+# 运行测试
+bun test
+```
+
+### Q6: OpenCode 与 Claude Code 有什么区别？
+
+**A:** 主要区别如下：
+
+- **开源**: OpenCode 100% 开源
+- **提供商无关**: 支持 Claude、OpenAI、Google 甚至本地模型，不绑定特定提供商
+- **开箱即用的 LSP 支持**: 内置语言服务器协议支持
+- **TUI 优先**: 由 neovim 用户构建，专注于终端体验
+- **客户端/服务器架构**: 支持 TUI 之外的多种客户端（如移动应用）
+
+---
 
 ## 更多资源
 
